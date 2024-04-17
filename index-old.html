@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mealy to Moore Machine Converter</title>
+  <style>
+    /* CSS for styling */
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #output {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #diagram {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"
+    integrity="sha512-gx05X612uoaolzJ5Ee/786b3th+qzAm90TOvRwZJwnE8yr0sHQG8eLxdR0/Hbqc2IFh2mWHzzXk79g3atNSwsQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Mealy to Moore Machine Converter</h2>
+    <label for="mealy">Enter Mealy Transition Table:</label>
+    <input type="text" id="mealy" placeholder="e.g., q0 -> b/1 -> q1, q1 -> a/0 -> q0, etc.">
+    <button onclick="showDiagram()">Show Diagram</button>
+    <div id="diagram"></div>
+    <button onclick="convert()">Convert to Moore</button>
+    <div id="output"></div>
+    <div id="digram_2"></div>
+  </div>
+
+  <script>
+    function showDiagram() {
+      const mealyTable = document.getElementById("mealy").value.trim().split(',').map(item => item.trim());
+      let diagramDefinition = 'graph TD;';
+      mealyTable.forEach(entry => {
+        const [state, transition, nextState] = entry.split('->').map(item => item.trim());
+        const [input, output] = transition.split('/');
+        diagramDefinition += `${state} -->|${input}/${output}| ${nextState};`;
+      });
+      document.getElementById("diagram").innerHTML = `<div class="mermaid">${diagramDefinition}</div>`;
+      mermaid.init(); // Initialize mermaid after the diagram is rendered
+    }
+
+
+    function convert() {
+  if (confirm("Are you sure you want to convert to Moore Machine?")) {
+    const mealyTable = document.getElementById("mealy").value.trim().split(',').map(item => item.trim());
+    const mooreTable = {};
+
+    // Process each entry in the Mealy table
+    mealyTable.forEach(entry => {
+      const [state, transition, nextState] = entry.split('->').map(item => item.trim());
+      const [input, output] = transition.split('/');
+
+      // Create state entries if they don't exist
+      mooreTable[state] = mooreTable[state] || {};
+
+      // Store transition information (including output)
+      mooreTable[state][input] = mooreTable[state][input] || { nextStates: [], outputs: [] };
+      mooreTable[state][input].nextStates.push(nextState);
+      mooreTable[state][input].outputs.push(output);
+    });
+
+    // Generate output HTML
+    let outputHtml = '<h3>Moore Transition Table:</h3><ul>';
+    for (const state in mooreTable) {
+      for (const input in mooreTable[state]) {
+        const { nextStates, outputs } = mooreTable[state][input];
+
+        // Generate output for each output of the state
+        for (let i = 0; i < outputs.length; i++) {
+          const outputHtmlLine = `<li>${state}-${i} -> ${nextStates[i]} (${outputs[i]})</li>`;
+          outputHtml += outputHtmlLine;
+        }
+      }
+    }
+    outputHtml += '</ul>';
+    document.getElementById("output").innerHTML = outputHtml;
+
+    // Construct Moore machine diagram definition
+    let diagramDefinition = 'graph TD;';
+    for (const state in mooreTable) {
+      for (const input in mooreTable[state]) {
+        const { nextStates, outputs } = mooreTable[state][input];
+
+        // Generate transition for each output of the state
+        for (let i = 0; i < outputs.length; i++) {
+          const diagramLine = `${state}-${i} -->|${input}| ${nextStates[i]}-${i};`;
+          diagramDefinition += diagramLine;
+        }
+      }
+    }
+
+    // Display the Moore machine diagram
+    document.getElementById("digram_2").innerHTML = `<div class="mermaid">${diagramDefinition}</div>`;
+    mermaid.init({ startOnLoad: true }); // Reinitialize mermaid
+  }
+}
+
+
+
+
+
+
+
+
+  </script>
+
+</body>
+
+</html>
