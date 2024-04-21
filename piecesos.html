@@ -22,12 +22,11 @@
 
 <body>
     <label for="userInput">Enter Moore Machine Transitions:</label><br>
-    <textarea type="text" id="userInput" size="60"
+    <textarea type="text" id="userInput" rows="10" cols="50"
         value="q0 -> b/1 -> q1, q1 -> a/0 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0"></textarea>
     <button onclick="visualize()">Visualize</button>
     <div id="transitionTable"></div>
     <div id="mermaid"></div>
-
     <script>
         mermaid.initialize({ startOnLoad: true });
 
@@ -35,13 +34,24 @@
             const input = document.getElementById('userInput').value;
             const transitions = input.split(',').map(t => t.trim().split('->').map(s => s.trim()));
             let states = {};
+            let stateCounter = 0; // Counter to generate unique state names
             transitions.forEach(([currentState, outputInput, nextState]) => {
                 const [input, output] = outputInput.split('/');
                 if (!states[currentState]) {
                     states[currentState] = { name: currentState, transitions: {}, output: {} };
                 }
-                states[currentState].transitions[input] = nextState;
-                states[currentState].output[input] = output;
+                if (states[currentState].output[input] && states[currentState].output[input] !== output) {
+                    // If same state encounters different outputs for the same input
+                    // Create a new state to handle these variations
+                    const newStateName = `${currentState}_${stateCounter++}`;
+                    states[newStateName] = { name: newStateName, transitions: {}, output: {} };
+                    states[newStateName].transitions[input] = nextState;
+                    states[newStateName].output[input] = output;
+                    currentState = newStateName; // Update currentState to the new state
+                } else {
+                    states[currentState].transitions[input] = nextState;
+                    states[currentState].output[input] = output;
+                }
             });
 
             generateTransitionTable(states);
@@ -65,7 +75,8 @@
             for (const [stateName, state] of Object.entries(states)) {
                 for (const [input, nextState] of Object.entries(state.transitions)) {
                     const output = state.output[input];
-                    diagramCode += `${stateName}("${stateName}/Out:${output}") -->|${input}| ${nextState}\n`;
+                    const nextStateName = nextState.split('_')[0]; // Extracting the original state name
+                    diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}")\n`;
                 }
             }
 
@@ -81,7 +92,9 @@
             // Re-initialize Mermaid on the new container
             mermaid.init(undefined, newContainer);
         }
+
     </script>
+
 </body>
 
 </html>
