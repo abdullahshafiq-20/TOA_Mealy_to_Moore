@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moore Machine Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .diagram-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .mermaid {
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <label for="moore">Enter Moore Transition Table:</label>
+        <input type="text" id="moore"
+            placeholder="e.g., q0 -> b/1 -> q1, q1 -> a/0 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0">
+        <button onclick="visualizeMoore()">Visualize</button>
+        <div id="table-container"></div>
+        <div class="diagram-container" id="diagram-container"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"
+        integrity="sha512-gx05X612uoaolzJ5Ee/786b3th+qzAm90TOvRwZJwnE8yr0sHQG8eLxdR0/Hbqc2IFh2mWHzzXk79g3atNSwsQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        function visualizeMoore() {
+            const mooreInput = document.getElementById("moore").value.trim();
+            const mooreTable = mooreInput.split(',').map(item => item.trim());
+
+            let tableHTML = '<table><tr><th>State</th><th>Input</th><th>Output</th><th>Next State</th></tr>';
+
+            mooreTable.forEach(entry => {
+                if (entry.includes('->')) { // Check if entry contains the delimiter '->'
+                    const [stateTransition, output] = entry.split('->').map(item => item.trim());
+                    const [state, transition] = stateTransition.split('->').map(item => item.trim());
+                    const [input, nextState] = transition.split('/').map(item => item.trim());
+
+                    if (!stateOutputMap.has(state)) {
+                        stateOutputMap.set(state, new Set());
+                    }
+
+                    stateOutputMap.get(state).add(output);
+                }
+            });
+
+
+            tableHTML += '</table>';
+
+            document.getElementById("table-container").innerHTML = `<h3>Moore Transition Table:</h3>${tableHTML}`;
+
+            let diagramDefinition = 'graph TD;';
+
+            const stateOutputMap = new Map();
+
+            mooreTable.forEach(entry => {
+                const [stateTransition, output] = entry.split('->').map(item => item.trim());
+                const [state, transition] = stateTransition.split('->').map(item => item.trim());
+                const [input, nextState] = transition.split('/').map(item => item.trim());
+
+                if (!stateOutputMap.has(state)) {
+                    stateOutputMap.set(state, new Set());
+                }
+
+                stateOutputMap.get(state).add(output);
+            });
+
+            stateOutputMap.forEach((outputs, state) => {
+                if (outputs.size === 1) {
+                    const output = outputs.values().next().value;
+                    diagramDefinition += `${state}[${output}]`;
+                } else {
+                    let outputLabels = Array.from(outputs).map(output => `[${output}]`).join('');
+                    diagramDefinition += `${state}${outputLabels}`;
+                }
+
+                diagramDefinition += ` -->|${state}| ${state};`;
+            });
+
+            const mermaidDiv = document.createElement('div');
+            mermaidDiv.classList.add('mermaid');
+            mermaidDiv.innerHTML = diagramDefinition;
+
+            document.getElementById("diagram-container").innerHTML = `<h3>Moore Machine Diagram:</h3>`;
+            document.getElementById("diagram-container").appendChild(mermaidDiv);
+
+            mermaid.init();
+        }
+    </script>
+</body>
+
+</html>
