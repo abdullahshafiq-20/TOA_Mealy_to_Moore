@@ -40,32 +40,27 @@
 
             transitions.forEach(([currentState, outputInput, nextState]) => {
                 const [input, output] = outputInput.split('/');
-                if (!states[currentState]) {
-                    states[currentState] = { name: currentState, transitions: {}, outputs: {} };
-                }
-                // Check if there's already a transition for the given input
-                if (states[currentState].transitions[input]) {
-                    // If the output for the existing transition is different, create a new state
-                    if (states[currentState].outputs[input] !== output) {
-                        const newStateName = `${currentState}_${stateCounter++}`;
-                        states[newStateName] = { name: newStateName, transitions: {}, outputs: {} };
-                        states[newStateName].transitions[input] = nextState;
-                        states[newStateName].outputs[input] = output;
-                        // Update the original state to transition to the new state instead
-                        states[currentState].transitions[input] = newStateName;
-                    }
+                const stateKey = `${currentState}/${output}`;
+                if (!states[stateKey]) {
+                    states[stateKey] = { name: stateKey, transitions: {}, outputs: {} };
                 } else {
-                    // If the input is encountered for the first time in this state
-                    states[currentState].transitions[input] = nextState;
-                    states[currentState].outputs[input] = output;
+                    // Check if the input is different
+                    const existingInput = Object.keys(states[stateKey].outputs)[0];
+                    if (existingInput !== input) {
+                        // Use the existing state if input is different
+                        nextState = states[stateKey].name;
+                    }
                 }
+                states[stateKey].transitions[input] = nextState;
+                states[stateKey].outputs[input] = output;
             });
-
-            // No need for additional loop; states are handled within the main forEach
 
             generateTransitionTable(states);
             generateDiagram(states);
         }
+
+
+
 
         function generateTransitionTable(states) {
             let tableHTML = `<table border="1"><tr><th>Current State</th><th>Input</th><th>Next State</th><th>Output</th></tr>`;
@@ -79,7 +74,6 @@
         }
 
         function generateDiagram(states) {
-            // Generate the diagram code as before
             let diagramCode = 'graph TD\n';
             for (const [stateName, state] of Object.entries(states)) {
                 for (const [input, nextState] of Object.entries(state.transitions)) {
@@ -89,18 +83,15 @@
                 }
             }
 
-            // Replace the container for the Mermaid diagram
             const mermaidContainer = document.getElementById('mermaid');
             const newContainer = document.createElement('div');
             newContainer.setAttribute('id', 'mermaid');
             mermaidContainer.parentNode.replaceChild(newContainer, mermaidContainer);
 
-            // Set the new diagram code
             newContainer.innerHTML = diagramCode;
-
-            // Re-initialize Mermaid on the new container
             mermaid.init(undefined, newContainer);
         }
+
 
 
 

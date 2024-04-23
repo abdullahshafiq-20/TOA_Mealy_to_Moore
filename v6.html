@@ -60,6 +60,7 @@
                     states[currentState].outputs[input] = output;
                 }
             });
+            console.log(states);
 
             // No need for additional loop; states are handled within the main forEach
 
@@ -85,21 +86,23 @@
                 for (const [input, nextState] of Object.entries(state.transitions)) {
                     const output = state.outputs[input];
                     const nextStateName = nextState.split('_')[0]; // Extracting the original state name
+                    
                     diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}")\n`;
+                    console.log(diagramCode);
                 }
             }
 
             // Replace the container for the Mermaid diagram
-            const mermaidContainer = document.getElementById('mermaid');
-            const newContainer = document.createElement('div');
-            newContainer.setAttribute('id', 'mermaid');
-            mermaidContainer.parentNode.replaceChild(newContainer, mermaidContainer);
+            // const mermaidContainer = document.getElementById('mermaid');
+            // const newContainer = document.createElement('div');
+            // newContainer.setAttribute('id', 'mermaid');
+            // mermaidContainer.parentNode.replaceChild(newContainer, mermaidContainer);
 
-            // Set the new diagram code
-            newContainer.innerHTML = diagramCode;
+            // // Set the new diagram code
+            // newContainer.innerHTML = diagramCode;
 
-            // Re-initialize Mermaid on the new container
-            mermaid.init(undefined, newContainer);
+            // // Re-initialize Mermaid on the new container
+            // mermaid.init(undefined, newContainer);
         }
 
 

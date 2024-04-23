@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moore Machine State Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.29.0/cytoscape.min.js"
+        integrity="sha512-rZbhbEdGGeHw1fgpPgosNB8pc8B4Fnm/IfuuxLMUzCwZU9VzzHoIHxi2aNowJE27a1LdEBmjCKwhlPTcsKuR/g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <div id="cy"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var cy = window.cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: [
+                    { data: { id: 'q0', label: 'q0', output: '0' } },
+                    { data: { id: 'q1', label: 'q1', output: '1' } },
+                    { data: { id: 'q2', label: 'q2' } },
+                    { data: { id: 'q2_1', label: 'q2', parent: 'q2', output: '2' } },
+                    { data: { id: 'q2_2', label: 'q2', parent: 'q2', output: '3' } },
+                    { data: { id: 'a', label: 'a' } },
+                    { data: { id: 'b', label: 'b' } },
+                    { data: { id: 'q0_to_q0', source: 'q0', target: 'q0', label: 'a' } },
+                    { data: { id: 'q0_to_q1', source: 'q0', target: 'q1', label: 'b' } },
+                    { data: { id: 'q1_to_q2', source: 'q1', target: 'q2_1', label: 'a' } },
+                    { data: { id: 'q1_to_q0', source: 'q1', target: 'q0', label: 'b' } },
+                    { data: { id: 'q2_to_q1', source: 'q2', target: 'q1', label: 'a' } },
+                    { data: { id: 'q2_to_q2', source: 'q2', target: 'q2_2', label: 'b' } }
+                ],
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'background-color': '#666',
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            'color': 'white',
+                            'width': 'label',
+                            'height': 'label',
+                            'text-outline-width': 2,
+                            'text-outline-color': '#666'
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'curve-style': 'bezier',
+                            'target-arrow-shape': 'triangle',
+                            'label': 'data(label)',
+                            'target-arrow-color': '#ccc',
+                            'line-color': '#ccc',
+                            'width': 2
+                        }
+                    }
+                ],
+                layout: {
+                    name: 'dagre'
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

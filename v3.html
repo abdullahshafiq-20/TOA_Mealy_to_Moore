@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Moore Machine Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"
+        integrity="sha512-gx05X612uoaolzJ5Ee/786b3th+qzAm90TOvRwZJwnE8yr0sHQG8eLxdR0/Hbqc2IFh2mWHzzXk79g3atNSwsQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to parse the input string and construct Mermaid code
+            // Function to parse the input string and construct Mermaid code
+            function parseInput(inputStr) {
+                let lines = inputStr.split("\n"); // Split input by lines
+                let m = "stateDiagram-v2\n"; // Initialize the Mermaid code with the diagram type
+
+                // Iterate over each line and construct Mermaid code
+                lines.forEach(function (line) {
+                    let parts = line.trim().split("->"); // Split the line by "->"
+                    if (parts.length === 2) { // Check if there are two parts
+                        let fromState = parts[0].trim(); // Extract the source state
+                        let output = parts[1].trim(); // Extract the output part
+                        let outputParts = output.split("/"); // Split the output part by "/"
+                        if (outputParts.length === 2) { // Check if there are two parts after splitting
+                            let input = outputParts[0].trim(); // Extract the input symbol
+                            let toState = outputParts[1].trim(); // Extract the destination state
+                            // Construct Mermaid code for defining states and transitions
+                            m += `    state "${fromState}" as ${fromState}\n`; // Define the source state
+                            m += `    state "${toState}" as ${toState}\n`; // Define the destination state
+                            m += `    ${fromState} --> ${toState} : ${input}\n`; // Define the transition
+                        }
+                    }
+                });
+
+                return m; // Return the constructed Mermaid code
+            }
+
+            // Function to update diagram when input changes
+            function updateDiagram() {
+                let inputStr = document.getElementById("inputText").value;
+                let m = parseInput(inputStr);
+                document.querySelector(".mermaid").innerHTML = m;
+                mermaid.init(); // Reinitialize Mermaid to render the updated diagram
+            }
+
+            // Attach event listener to input text area
+            document.getElementById("generateBtn").addEventListener('click', updateDiagram);
+        });
+    </script>
+</head>
+
+<body>
+    <textarea id="inputText" rows="10" cols="50" placeholder="Enter transitions in the format 'q0->a/0->q1'"></textarea>
+    <button id="generateBtn">Generate Diagram</button>
+    <div class="mermaid"></div>
+</body>
+
+</html>

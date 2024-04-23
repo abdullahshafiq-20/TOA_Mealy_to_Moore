@@ -17,6 +17,21 @@
         #mermaid {
             margin-top: 20px;
         }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 
@@ -24,8 +39,6 @@
     <label for="userInput">Enter Moore Machine Transitions:</label><br>
     <input type="text" id="userInput" size="100"
         placeholder="q0 -> b/1 -> q1, q1 -> a/0 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0">
-    <!-- <textarea type="text" id="userInput" rows="10" cols="50"
-        value="q0 -> b/1 -> q1, q1 -> a/0 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0"></textarea> -->
     <button onclick="visualize()">Visualize</button>
     <div id="transitionTable"></div>
     <div id="mermaid"></div>
@@ -61,14 +74,12 @@
                 }
             });
 
-            // No need for additional loop; states are handled within the main forEach
-
             generateTransitionTable(states);
             generateDiagram(states);
         }
 
         function generateTransitionTable(states) {
-            let tableHTML = `<table border="1"><tr><th>Current State</th><th>Input</th><th>Next State</th><th>Output</th></tr>`;
+            let tableHTML = `<table><tr><th>Current State</th><th>Input</th><th>Next State</th><th>Output</th></tr>`;
             for (const [stateName, state] of Object.entries(states)) {
                 for (const [input, nextState] of Object.entries(state.transitions)) {
                     tableHTML += `<tr><td>${stateName}</td><td>${input}</td><td>${nextState}</td><td>${state.outputs[input]}</td></tr>`;
@@ -80,12 +91,12 @@
 
         function generateDiagram(states) {
             // Generate the diagram code as before
-            let diagramCode = 'graph TD\n';
+            let diagramCode = 'stateDiagram-v2\n';
             for (const [stateName, state] of Object.entries(states)) {
+                diagramCode += `state "${stateName}" as ${stateName}\n`;
                 for (const [input, nextState] of Object.entries(state.transitions)) {
-                    const output = state.outputs[input];
                     const nextStateName = nextState.split('_')[0]; // Extracting the original state name
-                    diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}")\n`;
+                    diagramCode += `${stateName} --> ${nextStateName} : ${input}\n`;
                 }
             }
 
@@ -96,13 +107,11 @@
             mermaidContainer.parentNode.replaceChild(newContainer, mermaidContainer);
 
             // Set the new diagram code
-            newContainer.innerHTML = diagramCode;
+            newContainer.innerHTML = `<div class="mermaid">${diagramCode}</div>`;
 
             // Re-initialize Mermaid on the new container
             mermaid.init(undefined, newContainer);
         }
-
-
 
     </script>
 

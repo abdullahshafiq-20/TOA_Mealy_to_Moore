@@ -28,7 +28,9 @@
         value="q0 -> b/1 -> q1, q1 -> a/0 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0"></textarea> -->
     <button onclick="visualize()">Visualize</button>
     <div id="transitionTable"></div>
-    <div id="mermaid"></div>
+    <div id="mermaid">
+        stateDiagram-v2
+    </div>
     <script>
         mermaid.initialize({ startOnLoad: true });
 
@@ -37,6 +39,7 @@
             const transitions = input.split(',').map(t => t.trim().split('->').map(s => s.trim()));
             let states = {};
             let stateCounter = 0; // Counter to generate unique state names
+            let stateWithOutput = [];
 
             transitions.forEach(([currentState, outputInput, nextState]) => {
                 const [input, output] = outputInput.split('/');
@@ -61,7 +64,15 @@
                 }
             });
 
-            // No need for additional loop; states are handled within the main forEach
+            // Extract states with their outputs
+            stateWithOutput = Object.keys(states).map(stateName => {
+                return {
+                    state: stateName,
+                    outputs: states[stateName].outputs
+                };
+            });
+
+            console.log(stateWithOutput);
 
             generateTransitionTable(states);
             generateDiagram(states);
@@ -79,28 +90,45 @@
         }
 
         function generateDiagram(states) {
-            // Generate the diagram code as before
             let diagramCode = 'graph TD\n';
+
             for (const [stateName, state] of Object.entries(states)) {
+                let uniqueTransitions = new Set(); // Set to keep track of unique transitions for the current state
+
                 for (const [input, nextState] of Object.entries(state.transitions)) {
                     const output = state.outputs[input];
                     const nextStateName = nextState.split('_')[0]; // Extracting the original state name
-                    diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}")\n`;
+                    const transitionOutput = `${nextStateName}/${output}`;
+
+                    if (uniqueTransitions.has(output)) {
+                        // If the output has been encountered before, create a new state
+                        const newStateName = `${stateName}_split_${output}`;
+                        diagramCode += `${stateName}-->|${input}| ${newStateName}("${output}")\n`;
+                        diagramCode += `${newStateName}-->|${input}| ${nextStateName}("${transitionOutput}")\n`;
+                    } else {
+                        diagramCode += `${stateName}-->|${input}| ${nextStateName}("${transitionOutput}")\n`;
+                        uniqueTransitions.add(output); // Add the output to the set
+                    }
                 }
             }
 
-            // Replace the container for the Mermaid diagram
             const mermaidContainer = document.getElementById('mermaid');
             const newContainer = document.createElement('div');
             newContainer.setAttribute('id', 'mermaid');
             mermaidContainer.parentNode.replaceChild(newContainer, mermaidContainer);
 
-            // Set the new diagram code
             newContainer.innerHTML = diagramCode;
 
-            // Re-initialize Mermaid on the new container
             mermaid.init(undefined, newContainer);
         }
+
+
+
+
+
+
+
+
 
 
 

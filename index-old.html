@@ -70,14 +70,16 @@
 
   <div class="container">
     <h2>Mealy to Moore Machine Converter</h2>
-      <label for="mealy">Enter Mealy Transition Table:</label>
-      <input type="text" id="mealy" placeholder="e.g., q0 -> b/1 -> q1, q1 -> a/0 -> q0, etc.">
-      <button onclick="showDiagram()">Show Diagram</button>
+    <label for="mealy">Enter Mealy Transition Table:</label>
+    <input type="text" id="mealy" placeholder="e.g., q0 -> b/1 -> q1, q1 -> a/0 -> q0, etc.">
+    <button onclick="showDiagram()">Show Diagram</button>
     <div id="table"></div>
     <div id="diagram"></div>
     <button onclick="convert()">Convert to Moore</button>
     <div id="output"></div>
-    <div id="digram_2"></div>
+    <div id="digram_2">
+      stateDiagram-v2
+    </div>
   </div>
 
   <script>
@@ -134,10 +136,11 @@
           mooreTable[state][input].nextStates.push(nextState);
           mooreTable[state][input].outputs.push(output);
         });
-        const mooreDiagramCode = generateMooreDiagram(mooreTable);
-        // mermaid.render('mooreDiagram', mooreDiagramCode, function () { });
 
-        // Generate output HTML
+        // Generate Moore diagram code and render it
+        generateMooreDiagram(mooreTable);
+
+        // Generate output HTML for the transition table
         let outputHtml = '<h3>Moore Transition Table:</h3><ul>';
         for (const state in mooreTable) {
           for (const input in mooreTable[state]) {
@@ -153,47 +156,54 @@
         }
         outputHtml += '</ul>';
         document.getElementById("output").innerHTML = outputHtml;
-
-      }
-      function generateMooreDiagram(mooreTable) {
-        let mermaidCode = 'graph TD;\n';
-
-        // Iterate over present states in the Moore table
-        for (const presentState in mooreTable) {
-          // Iterate over outputs associated with the present state
-          for (const output in mooreTable[presentState]) {
-            // Iterate over inputs associated with the present state and output
-            for (const input in mooreTable[presentState][output]) {
-              const nextState = mooreTable[presentState][output][input];
-              mermaidCode += `${presentState}(${output}) -->|${input}| ${nextState}(${output});\n`;
-            }
-          }
-        }
-
-        // Render the diagram
-       
-          // Display the SVG code in the element with ID "diagram_2"
-          document.getElementById("digram_2").innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
-        
-      }
-
-
-      // Helper function to get all unique combinations of outputs
-      function getOutputCombinations(outputs) {
-        const uniqueOutputs = [...new Set(outputs)];
-        const outputCombinations = [[]];
-
-        uniqueOutputs.forEach(output => {
-          const temp = [];
-          outputCombinations.forEach(combination => {
-            temp.push([...combination, output]);
-          });
-          outputCombinations.push(...temp);
-        });
-
-        return outputCombinations.filter(combination => combination.length > 0).map(combination => combination.join(''));
       }
     }
+
+    // Function to generate Moore diagram code
+    function generateMooreDiagram(mooreTable) {
+      let diagramDefinition = 'graph TD;';
+      let m = document.getElementById("digram_2");
+
+      for (const state in mooreTable) {
+        for (const input in mooreTable[state]) {
+          const { nextStates, outputs } = mooreTable[state][input];
+
+          // Join outputs and inputs
+          const outputStr = outputs.join(',');
+          const inputStr = input.split(',').join(',');
+
+          // Generate Mermaid diagram definition
+          diagramDefinition += `${state}/${outputStr} --> ${nextStates.join(',')}/${inputStr};`;
+        }
+      }
+
+      // Update the inner HTML of the element with the Mermaid diagram definition
+      m.innerHTML = diagramDefinition;
+
+      // Render Mermaid diagram
+      mermaid.initialize({ startOnLoad: true });
+    }
+
+
+
+
+
+    // Helper function to get all unique combinations of outputs
+    function getOutputCombinations(outputs) {
+      const uniqueOutputs = [...new Set(outputs)];
+      const outputCombinations = [[]];
+
+      uniqueOutputs.forEach(output => {
+        const temp = [];
+        outputCombinations.forEach(combination => {
+          temp.push([...combination, output]);
+        });
+        outputCombinations.push(...temp);
+      });
+
+      return outputCombinations.filter(combination => combination.length > 0).map(combination => combination.join(''));
+    }
+
   </script>
 
 </body>

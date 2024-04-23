@@ -35,33 +35,36 @@
         function visualize() {
             const input = document.getElementById('userInput').value;
             const transitions = input.split(',').map(t => t.trim().split('->').map(s => s.trim()));
-            let states = {};
-            let stateCounter = 0; // Counter to generate unique state names
+            let states = {}; // Object to store states and transitions
 
             transitions.forEach(([currentState, outputInput, nextState]) => {
                 const [input, output] = outputInput.split('/');
+
+                // If the current state does not exist, create it
                 if (!states[currentState]) {
-                    states[currentState] = { name: currentState, transitions: {}, outputs: {} };
+                    states[currentState] = {};
                 }
-                // Check if there's already a transition for the given input
-                if (states[currentState].transitions[input]) {
+
+                // If there's already a transition for the input in the current state
+                if (states[currentState][input]) {
                     // If the output for the existing transition is different, create a new state
-                    if (states[currentState].outputs[input] !== output) {
-                        const newStateName = `${currentState}_${stateCounter++}`;
-                        states[newStateName] = { name: newStateName, transitions: {}, outputs: {} };
-                        states[newStateName].transitions[input] = nextState;
-                        states[newStateName].outputs[input] = output;
+                    if (states[currentState].output !== output) {
+                        const newStateName = `${currentState}_${input}_${output}`;
+                        states[newStateName] = {};
+                        states[newStateName][input] = nextState;
+                        states[newStateName].output = output;
                         // Update the original state to transition to the new state instead
-                        states[currentState].transitions[input] = newStateName;
+                        states[currentState][input] = newStateName;
                     }
                 } else {
                     // If the input is encountered for the first time in this state
-                    states[currentState].transitions[input] = nextState;
-                    states[currentState].outputs[input] = output;
+                    states[currentState][input] = nextState;
+                    states[currentState].output = output;
                 }
             });
 
-            // No need for additional loop; states are handled within the main forEach
+            console.log(states);
+            // Add visualization logic here as needed
 
             generateTransitionTable(states);
             generateDiagram(states);
@@ -69,9 +72,11 @@
 
         function generateTransitionTable(states) {
             let tableHTML = `<table border="1"><tr><th>Current State</th><th>Input</th><th>Next State</th><th>Output</th></tr>`;
-            for (const [stateName, state] of Object.entries(states)) {
-                for (const [input, nextState] of Object.entries(state.transitions)) {
-                    tableHTML += `<tr><td>${stateName}</td><td>${input}</td><td>${nextState}</td><td>${state.outputs[input]}</td></tr>`;
+            for (const [stateName, transitions] of Object.entries(states)) {
+                for (const [input, nextState] of Object.entries(transitions)) {
+                    if (input !== "output") {
+                        tableHTML += `<tr><td>${stateName}</td><td>${input}</td><td>${nextState}</td><td>${transitions.output}</td></tr>`;
+                    }
                 }
             }
             tableHTML += `</table>`;
@@ -79,13 +84,18 @@
         }
 
         function generateDiagram(states) {
-            // Generate the diagram code as before
+            // Generate the diagram code
+            let c=0;
             let diagramCode = 'graph TD\n';
-            for (const [stateName, state] of Object.entries(states)) {
-                for (const [input, nextState] of Object.entries(state.transitions)) {
-                    const output = state.outputs[input];
-                    const nextStateName = nextState.split('_')[0]; // Extracting the original state name
-                    diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}")\n`;
+            for (const [stateName, transitions] of Object.entries(states)) {
+                for (const [input, nextState] of Object.entries(transitions)) {
+                    if (input !== "output") {
+                        const nextStateName = nextState.split('_')[0]; // Extracting the original state name
+                        const output = transitions.output; // Retrieve output from the current state
+                        
+                        c++;
+                        diagramCode += `${stateName}-->|${input}| ${nextStateName}("${nextStateName}/${output}-${c}")\n`;
+                    }
                 }
             }
 

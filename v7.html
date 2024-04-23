@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transition Parser</title>
+</head>
+
+<body>
+
+    <h2>Transition Parser</h2>
+
+    <div>
+        <label for="transitionInput">Enter Transitions:</label>
+        <input type="text" id="transitionInput"
+            placeholder="e.g., q0 -> b/1 -> q1, q1 -> a/1 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0">
+        <button onclick="parseTransitions()">Parse</button>
+    </div>
+
+    <div id="output"></div>
+    <div class="transitionTable"></div>
+
+    <script>
+        function parseTransitions() {
+            var inputString = document.getElementById("transitionInput").value.trim();
+
+            var transitions = inputString.split(', ');
+            var statesSet = new Set();
+            var inputsSet = new Set();
+            var outputsSet = new Set();
+            var stateWithOutputSet = new Set();
+
+            transitions.forEach(function (transition) {
+                var parts = transition.split(' -> ');
+                var startState = parts[0];
+                var transitionInfo = parts[1];
+                var endState = parts[2];
+                var inputChar = transitionInfo.split('/')[0];
+                var outputChar = transitionInfo.split('/')[1] || 'ε';
+
+                statesSet.add(startState);
+                statesSet.add(endState);
+                inputsSet.add(inputChar);
+                outputsSet.add(outputChar);
+
+                stateWithOutputSet.add(startState + '/' + outputChar);
+            });
+
+            var states = {
+                states: Array.from(statesSet).sort(),
+                inputs: Array.from(inputsSet).sort(),
+                outputs: Array.from(outputsSet).sort(),
+                stateWithOutput: Array.from(stateWithOutputSet).sort()
+            };
+
+            var outputDiv = document.getElementById("output");
+            outputDiv.innerHTML = "<p>States: " + states.states.join(', ') + "</p>";
+            outputDiv.innerHTML += "<p>Inputs: " + states.inputs.join(', ') + "</p>";
+            outputDiv.innerHTML += "<p>Outputs: " + states.outputs.join(', ') + "</p>";
+            outputDiv.innerHTML += "<p>States with Output: " + states.stateWithOutput.join(', ') + "</p>";
+
+            console.log(states);
+
+            // abc(states);
+            createTransitionTable(states);
+
+        }
+
+
+        function createTransitionTable(states) {
+            let tableHTML = `<table border="1"><tr><th>Current State</th>`;
+
+            // Adding headers for inputs
+            states.inputs.forEach(function (input) {
+                tableHTML += `<th>${input}</th>`;
+            });
+
+            tableHTML += `<th>Output</th></tr>`;
+
+            // Adding rows for each state
+            states.states.forEach(function (state) {
+                tableHTML += `<tr><td>${state}</td>`;
+
+                // Adding transition information for each input
+                states.inputs.forEach(function (input) {
+                    var nextState = getNextState(state, input, states.stateWithOutput);
+                    var output = getOutput(state, input, states.stateWithOutput);
+                    tableHTML += `<td>${nextState}</td>`;
+                });
+
+                tableHTML += `<td>${output}</td></tr>`;
+            });
+
+            tableHTML += `</table>`;
+            console.log(tableHTML);
+
+            document.getElementsByClassName('transitionTable').innerHTML = tableHTML;
+        }
+
+        // Function to get next state for a given state and input
+        function getNextState(state, input, stateWithOutput) {
+            var nextState = " ";
+
+            stateWithOutput.forEach(function (stateOutput) {
+                var parts = stateOutput.split('/');
+                var currentState = parts[0];
+                var output = parts[1];
+
+                if (currentState === state && output === input) {
+                    nextState = parts[2];
+                }
+            });
+
+            return nextState;
+        }
+
+        // Function to get output for a given state and input
+        function getOutput(state, input, stateWithOutput) {
+            var output = " ";
+
+            stateWithOutput.forEach(function (stateOutput) {
+                var parts = stateOutput.split('/');
+                var currentState = parts[0];
+                var transitionInput = parts[1];
+                var transitionOutput = parts[3];
+
+                if (currentState === state && transitionInput === input) {
+                    output = transitionOutput;
+                }
+            });
+
+            return output;
+        }
+
+        // Function to get transition for a given state and input
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

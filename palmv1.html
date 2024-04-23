@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Moore Transition Table</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"
+        integrity="sha512-gx05X612uoaolzJ5Ee/786b3th+qzAm90TOvRwZJwnE8yr0sHQG8eLxdR0/Hbqc2IFh2mWHzzXk79g3atNSwsQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+  <div id="graph"></div>
+
+  <script>
+    var input = 'q0 -> b/1 -> q1, q1 -> a/1 -> q0, q1 -> b/1 -> q1, q0 -> a/0 -> q0';
+
+    // Convert the input to a Moore transition table
+    var transitionTable = {};
+    var states = [];
+    var outputs = [];
+    input.split(',').forEach(function (transition) {
+      var parts = transition.split('->');
+      var state = parts[0].trim();
+      var output = parts[1].split('/')[0].trim();
+      var nextState = parts[1].split('/')[1].trim();
+
+      if (!states.includes(state)) {
+        states.push(state);
+      }
+      if (!outputs.includes(output)) {
+        outputs.push(output);
+      }
+
+      if (!transitionTable[state]) {
+        transitionTable[state] = {};
+      }
+      transitionTable[state][output] = nextState;
+    });
+
+    // Create a Mermaid diagram of the Moore transition table
+    var diagram = 'graph TD\n';
+    states.forEach(function (state) {
+      diagram += state + ';\n';
+    });
+    outputs.forEach(function (output) {
+      diagram += '-->' + output + '-->;\n';
+    });
+    for (var state in transitionTable) {
+      for (var output in transitionTable[state]) {
+        diagram += state + '-->' + output + '-->' + transitionTable[state][output] + ';\n';
+      }
+    }
+
+    // Render the Mermaid diagram
+    mermaid.initialize({ startOnLoad: true });
+    mermaid.render('graph', diagram);
+  </script>
+</body>
+
+</html>
