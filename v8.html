@@ -122,6 +122,29 @@
             mermaid.init(undefined, newContainer);
         }
 
+        function generateDiagramFromTransitionTable(transitionTable) {
+            let diagramCode = 'stateDiagram-v2\n';
+
+            transitionTable.forEach((line) => {
+                const [currentState, input, nextState, output] = line.split(/\s+/);
+                diagramCode += `   ${currentState} --> ${nextState} :${input}\n`;
+            });
+
+            return diagramCode;
+        }
+
+        // Example usage:
+        const transitionTable = [
+            "q0/0 a q0/0",
+            "q0/0 b q1/1",
+            "q1/1 a q0/0",
+            "q1/1 b q1/1"
+        ];
+
+        const diagram = generateDiagramFromTransitionTable(transitionTable);
+        document.getElementById('mermaid').innerHTML = diagram;
+        console.log(diagram);
+
 
 
 
