@@ -104,13 +104,22 @@
             "q1/1 c q1/2"
         ];
         const input = `q0 a q0 0
-q0 b q1 1
-q1 a q0 0
-q1 b q1 1`;
+                    q0 b q1 1
+                    q1 a q0 0
+                    q1 b q1 1
+                    q1 c q1 2`;
+
+
         console.log(input);
 
+        console.log("Yes mine:", convertInput(input));
 
-        // console.log(convertInput(input));
+
+
+
+
+
+        console.log(convertInput(input));
         function convertInput(input) {
             const lines = input.split("\n");
 
@@ -140,16 +149,15 @@ q1 b q1 1`;
                 const nextState = components[2].trim();
                 const outputSymbol = components[3].trim();
 
-                const combinedState = prevStateWithOutput ? `${currentState}/${prevStateWithOutput}` : currentState;
+                const transition = `${currentState}/${prevStateWithOutput} ${inputSymbol} ${nextState}/${outputSymbol}`;
 
-                formattedTransitions.push(`${combinedState} ${inputSymbol} ${nextState}/${outputSymbol}`);
+                formattedTransitions.push(transition);
 
                 prevStateWithOutput = outputSymbol;
             }
 
             return formattedTransitions;
         }
-
 
 
 
